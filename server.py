@@ -14,10 +14,10 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Identifies clients
 
 # Bind the socket with our IP-address and port
 ADDR = (SERVER, PORT)
-server.bind(('', PORT))  # Bind the two together: Anything that connects to the IP and PORT will hit the server socket
+server.bind(ADDR)  # Bind the two together: Anything that connects to the IP and PORT will hit the server socket
 
-HEADER = 64  # Size -- TODO: Check for specific size needed for HTTP
-FORMAT = 'utf-8'  # Only translates bytes to text, not compatible for images (TODO: find different format)
+HEADER = 1024  # Size -- TODO: Check for specific size needed for HTTP
+FORMAT = 'iso-8859-1'  # Only translates bytes to text, not compatible for images (TODO: find different format)
 DISCONNECT_MESSAGE = "DISCONNECT"
 
 
