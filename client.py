@@ -61,11 +61,14 @@ def get_body(contenttype,length):
         body = b''
         while remaining > 0:
             if remaining > 1024:
-                body += client.recv(1024)
-                remaining -= 1024
+                part = client.recv(1024)
+                remaining -= len(part)
+                body += part
             else:
-                body += client.recv(remaining)
-                remaining = 0
+                part = client.recv(remaining)
+                remaining -= len(part)
+                body += part
+
     else:
         print("Something went wrong with the headertype")
     return body
@@ -81,7 +84,7 @@ def send_request(command, ADDR, resource):
 
     if command == 'GET':
         body = get_body(contenttype,length)
-        bs = BeautifulSoup(body, 'html.parser')
+        bs = BeautifulSoup(body.decode(encoding = FORMAT), 'lxml')
         images = bs.findAll('img')
         internal_images = []
         external_images = []
@@ -118,14 +121,15 @@ def send_request(command, ADDR, resource):
                 imagesocket.sendall(request)
                 contenttype,length = get_header_and_content_type()
                 image = get_body(contenttype,length)
+                new_source = elem['src'].split("/")[-1]
+                elem['src'] = new_source
                 Func = open(str(elem.get('src').split('/')[-1]),'wb')
                 Func.write(image)
                 Func.close()
                 imagesocket.close()
 
-        Func = open("Assignment-CN.html", "wb", encoding ='iso-8859-1')
-        Func.write(str(bs))
-        #Func.write(body)
+        Func = open("Assignment-CN.html", "wb")
+        Func.write(bs.prettify('iso-8859-1'))
         Func.close()
         client.close()
         print("Client terminating. Server terminated connection to this client")
@@ -163,4 +167,4 @@ while True:  # Keep checking for new commands (after the last connection has end
     print(resource)
     ADDR = (host,port)
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    send_request(command, ADDR, resource)  # Send the command and corresponding URL to the function
+    send_request(command, ADDR, resource)  # Send the command and corresponding address en resource to the function
