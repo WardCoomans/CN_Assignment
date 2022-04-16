@@ -75,14 +75,14 @@ def get_body(contenttype,length):
 
 def send_request(command, ADDR, resource):
     client.connect(ADDR)
-    print("[SENT]")
-    request = f'GET /{resource} HTTP/1.1\r\nHost: {ADDR[0]}:{ADDR[1]} \r\n\r\n'.encode(FORMAT)  # Put request as bytes
-    print(request)
-    client.sendall(request)
-    contenttype, length = get_header_and_content_type()
-
 
     if command == 'GET':
+        print("[SENT]")
+        request = f'GET /{resource} HTTP/1.1\r\nHost: {ADDR[0]}:{ADDR[1]} \r\n\r\n'.encode(FORMAT)  # Put request as bytes
+        print(request)
+        client.sendall(request)
+        print('received')
+        contenttype, length = get_header_and_content_type()
         body = get_body(contenttype,length)
         bs = BeautifulSoup(body.decode(encoding = FORMAT), 'lxml')
         images = bs.findAll('img')
@@ -135,16 +135,18 @@ def send_request(command, ADDR, resource):
         print("Client terminating. Server terminated connection to this client")
 
     elif command == 'HEAD':
-        request = "HEAD / HTTP/1.1\r\nHost: {}\r\n\r\n".format(SERVER)      # TODO: ipv .format(...) kan je f-strings gebruiken (korter)
-        client.send(request.encode(FORMAT))
+        print('[SENT]')
+        request = f'HEAD / HTTP/1.1\r\nHost: {ADDR[0]}:{ADDR[1]} \r\n\r\n'.encode(FORMAT)
+        print(request)
+        client.send(request)
+        get_header_and_content_type()
         client.close()
         print("Client terminating. Server terminated connection to this client")
 
     elif command == 'POST':
         msg = input("Give POST input: ")
-        request = "POST / HTTP/1.1\r\nHost: {}\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: {}\r\n\r\n{}\r\n".format(
-            SERVER, len(msg), msg)
-        client.send(request.encode(FORMAT))
+        request = f"POST / HTTP/1.1\r\nHost: {ADDR[0]}:{ADDR[1]}\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: {len(msg)}\r\n\r\n{msg}\r\n".encode(FORMAT)
+        client.send(request)
         client.close()
         print("Client terminating. Server terminated connection to this client")
 
@@ -156,6 +158,14 @@ def send_request(command, ADDR, resource):
         client.close()
         print("Client terminating. Server terminated connection to this client")
 
+    else:
+        #for testing purposes
+        print("IN TESTING CASE")
+        request = f"POR HTTP/1.1\r\nHost: {ADDR[0]}:{ADDR[1]}\r\n\r\n".encode(FORMAT)
+        client.send(request)
+        response = client.recv(1024)
+        print(response)
+        client.close()
 
 while True:  # Keep checking for new commands (after the last connection has ended)
     command = input("Enter the command you wish to execute: ")
