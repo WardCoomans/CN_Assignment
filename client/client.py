@@ -86,7 +86,6 @@ def send_request(command, ADDR, resource):
         Func.write(bs.prettify('iso-8859-1'))
         Func.close()
         images = bs.findAll('img')
-        print(images)
         internal_images = []
         external_images = []
 
@@ -117,7 +116,7 @@ def send_request(command, ADDR, resource):
                 resource = '/'.join(elem.split("//")[1].split("/")[1:])
                 ADDR = (host,80)
                 imagesocket.connect(ADDR)
-                request = f'GET /{resource} HTTP/1.1\r\nHost: {ADDR[0]}:{ADDR[1]} \r\n\r\n'.encode(FORMAT)
+                request = f'GET /{resource} HTTP/1.1\r\nHost: {ADDR[0]}:{ADDR[1]} \r\nConnection: closed\r\n\r\n'.encode(FORMAT)
                 print('[SENT]')
                 print(request)
                 imagesocket.sendall(request)
@@ -131,7 +130,6 @@ def send_request(command, ADDR, resource):
         Func = open("Assignment-CN.html", "wb")
         Func.write(bs.prettify('iso-8859-1'))
         Func.close()
-        client.close()
         print("Client terminating. Server terminated connection to this client")
 
     elif command == 'HEAD':
