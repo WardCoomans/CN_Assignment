@@ -36,7 +36,7 @@ def get_body(contenttype, length, client):
             first = True
             while b'\r\n' not in data:          # Chunk has a specific header, containing length of chunk (hex value)
                 test = client.recv(1)           # Receive one byte of body
-                if first and test == b'\r':     # Double CRLF test TODO:Imran - Nog beetje verward over wat dit doet?
+                if first and test == b'\r':     # Remove trailing CRLF (not part of the chunk data)
                     client.recv(1)
                 else:
                     data += test

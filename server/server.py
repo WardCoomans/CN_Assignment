@@ -3,12 +3,8 @@ import threading
 from email.utils import formatdate, parsedate
 import os
 import datetime
-from wsgiref.handlers import format_date_time
 from datetime import datetime
-from time import mktime
-from http import HTTPStatus
 import mimetypes
-import traceback
 
 hostname = socket.gethostname()  # Get hostname = Name of Computer
 local_ip = socket.gethostbyname(hostname)  # Get IP-address of machine
@@ -37,7 +33,7 @@ def GET(client, resource):
         print(['ERROR contenttype not found, using text/html'])  # Use text/html as default
         content_type = 'text/html'
     try:
-        Func = open(resource, 'rb') if "text" in content_type else open(resource, 'rb')  # TODO: if- en else doen zelfde
+        Func = open(resource, 'rb')
         content = Func.read()
         Func.close()
         send_status_code(client, 'OK', content, content_type, resource)  # Everything went well, send OK status including the body content to be sent
@@ -139,7 +135,7 @@ def send_status_code(client, ID, content=b'', content_type="text/html", resource
     # Good response
     elif ID == 'OK':    # In case of GET
         date = formatdate(timeval=None, localtime=False, usegmt=True)
-        response = f"HTTP/1.1 200 OK\r\nContent-Type: {content_type}\r\nContent-Length: {str(len(content))}\r\nDate: {date}\r\n\r\n".encode(FORMAT, errors='ignore')
+        response = f"HTTP/1.1 200 OK\r\nDate: {date}\r\nContent-Type: {content_type}\r\nContent-Length: {str(len(content))}\r\n\r\n".encode(FORMAT, errors='ignore')
         if isinstance(content, str):    # Check if content is in string format
             content = content.encode(FORMAT, errors='ignore')   # Encode the content as bytes to be streamed to client
         response += content     # Add body content (in byte format) to the response to be sent
@@ -149,7 +145,7 @@ def send_status_code(client, ID, content=b'', content_type="text/html", resource
 
     elif ID == 'OKHeader':
         date = formatdate(timeval=None, localtime=False, usegmt=True)
-        response = f"HTTP/1.1 200 OK\r\nContent-Type: {content_type}\r\nContent-Length: {len(content)}\r\nDate: {date}\r\n\r\n".encode(FORMAT)
+        response = f"HTTP/1.1 200 OK\r\nDate: {date}\r\nContent-Type: {content_type}\r\nContent-Length: {len(content)}\r\n\r\n".encode(FORMAT)
         print(response)         # Only header needs to be sent (includes length of content)
         client.send(response)
 
@@ -315,7 +311,7 @@ def handle_client(clientsocket, addr):  # Thread friendly way of handling one in
 def start():
     server.listen()  # Server should be listening for clients
     while True:
-        clientsocket, addr = server.accept()  # Accept clients (Blocking method, TODO: Threading)
+        clientsocket, addr = server.accept()  # Accept clients (Blocking method -- Fixed with threading)
         thread = threading.Thread(target=handle_client, args=(clientsocket, addr))
         thread.start()
         print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")  # Amount of clients = Amount of threads - start
